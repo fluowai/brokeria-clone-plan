@@ -9,13 +9,14 @@ export type AuthUser = {
   name: string;
   tenantId: string;
   roles: string[];
+  tenant?: { vertical: string; verticals: string[]; name: string; slug: string } | null;
 };
 
 type AuthCtx = {
   user: AuthUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (input: { email: string; password: string; name: string; agency: string }) => Promise<void>;
+  signUp: (input: { email: string; password: string; name: string; agency: string; vertical?: "urban" | "rural" | "developer" | "land" }) => Promise<void>;
   signOut: () => Promise<void>;
 };
 

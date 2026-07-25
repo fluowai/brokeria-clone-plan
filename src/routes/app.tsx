@@ -38,10 +38,16 @@ function AppShell() {
     );
   }
 
+  const v = user.tenant?.vertical ?? "urban";
+  const propertiesLabel =
+    v === "rural" ? "Fazendas" :
+    v === "developer" ? "Empreendimentos" :
+    v === "land" ? "Loteamentos" : "Imóveis";
   const nav = [
     { to: "/app", label: "Dashboard" },
     { to: "/app/crm", label: "CRM" },
-    { to: "/app/properties", label: "Imóveis" },
+    { to: "/app/properties", label: propertiesLabel },
+    ...(v === "developer" || v === "land" ? [{ to: "/app/contracts", label: "Contratos" }] : []),
     { to: "/app/ai", label: "Agentes IA" },
     { to: "/app/whatsapp", label: "WhatsApp" },
     { to: "/app/feeds", label: "Feeds XML" },

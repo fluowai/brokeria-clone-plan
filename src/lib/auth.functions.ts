@@ -20,6 +20,7 @@ const signUpSchema = z.object({
   password: z.string().min(6),
   name: z.string().min(2),
   agency: z.string().min(2),
+  vertical: z.enum(["urban", "rural", "developer", "land"]).default("urban"),
 });
 
 async function issueSession(user: { id: string; tenant_id: string; email: string; name: string }) {
@@ -56,8 +57,8 @@ export const signUp = createServerFn({ method: "POST" })
     }
 
     const tenant = await one<{ id: string }>(
-      "INSERT INTO tenants(name, slug) VALUES($1,$2) RETURNING id",
-      [data.agency, slug],
+      "INSERT INTO tenants(name, slug, vertical, verticals) VALUES($1,$2,$3,ARRAY[$3]::tenant_vertical[]) RETURNING id",
+      [data.agency, slug, data.vertical],
     );
     if (!tenant) throw new Error("Falha ao criar tenant");
 
@@ -112,6 +113,10 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
 export const me = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
+    const tenant = await one<{ vertical: string; verticals: string[]; name: string; slug: string }>(
+      "SELECT vertical, verticals, name, slug FROM tenants WHERE id=$1",
+      [context.auth.tid],
+    );
     return {
       user: {
         id: context.auth.sub,
@@ -119,6 +124,7 @@ export const me = createServerFn({ method: "GET" })
         name: context.auth.name,
         tenantId: context.auth.tid,
         roles: context.auth.roles,
+        tenant: tenant ?? null,
       },
     };
   });

@@ -25,10 +25,19 @@ export const Route = createFileRoute("/auth")({
   ),
 });
 
+type Vertical = "urban" | "rural" | "developer" | "land";
+const VERTICALS: { id: Vertical; label: string; desc: string }[] = [
+  { id: "urban", label: "Imobiliária Urbana", desc: "Apartamentos, casas, comercial" },
+  { id: "rural", label: "Imobiliária Rural", desc: "Fazendas, sítios, chácaras" },
+  { id: "developer", label: "Incorporadora / Construtora", desc: "Empreendimentos, unidades, tabelas" },
+  { id: "land", label: "Loteadora", desc: "Loteamentos, lotes, parcelamento" },
+];
+
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
+  const [vertical, setVertical] = useState<Vertical>("urban");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +51,7 @@ function AuthPage() {
       if (mode === "signin") {
         await signIn(email, password);
       } else {
-        await signUp({ name, email, password, agency: company });
+        await signUp({ name, email, password, agency: company, vertical });
       }
       toast.success(mode === "signin" ? "Bem-vindo de volta!" : "Conta criada!");
       navigate({ to: "/app" });
@@ -74,8 +83,31 @@ function AuthPage() {
                   <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div>
-                  <Label htmlFor="company">Imobiliária</Label>
-                  <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} />
+                  <Label htmlFor="company">Empresa</Label>
+                  <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} required />
+                </div>
+                <div>
+                  <Label>Segmento</Label>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {VERTICALS.map((v) => {
+                      const active = vertical === v.id;
+                      return (
+                        <button
+                          type="button"
+                          key={v.id}
+                          onClick={() => setVertical(v.id)}
+                          className={`text-left rounded-md border px-3 py-2 text-xs transition ${
+                            active
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border/60 text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <div className="font-medium text-sm">{v.label}</div>
+                          <div className="opacity-70">{v.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </>
             )}
