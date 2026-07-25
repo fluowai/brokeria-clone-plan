@@ -16,6 +16,7 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
+import { Route as AppLotsRouteImport } from './routes/app.lots'
 import { Route as AppFeedsRouteImport } from './routes/app.feeds'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
@@ -58,6 +59,11 @@ const AppWhatsappRoute = AppWhatsappRouteImport.update({
 const AppPropertiesRoute = AppPropertiesRouteImport.update({
   id: '/properties',
   path: '/properties',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLotsRoute = AppLotsRouteImport.update({
+  id: '/lots',
+  path: '/lots',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFeedsRoute = AppFeedsRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
+  '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
+  '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
+  '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
+    | '/app/lots'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -182,6 +192,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
+    | '/app/lots'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -199,6 +210,7 @@ export interface FileRouteTypes {
     | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
+    | '/app/lots'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: '/properties'
       fullPath: '/app/properties'
       preLoaderRoute: typeof AppPropertiesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/lots': {
+      id: '/app/lots'
+      path: '/lots'
+      fullPath: '/app/lots'
+      preLoaderRoute: typeof AppLotsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/feeds': {
@@ -332,6 +351,7 @@ interface AppRouteChildren {
   AppBillingRoute: typeof AppBillingRoute
   AppCrmRoute: typeof AppCrmRoute
   AppFeedsRoute: typeof AppFeedsRoute
+  AppLotsRoute: typeof AppLotsRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -344,6 +364,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBillingRoute: AppBillingRoute,
   AppCrmRoute: AppCrmRoute,
   AppFeedsRoute: AppFeedsRoute,
+  AppLotsRoute: AppLotsRoute,
   AppPropertiesRoute: AppPropertiesRoute,
   AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
@@ -362,13 +383,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
