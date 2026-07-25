@@ -28,7 +28,7 @@ const VERTICAL_MULT: Record<Vertical, number> = {
   land: 1.5,
 };
 
-const BASE: Array<Omit<Plan, "vertical" | "price" | "id" | "name"> & { name: string }> = [
+const BASE: Array<Omit<Plan, "vertical" | "id">> = [
   {
     tier: "starter",
     name: "Starter",
