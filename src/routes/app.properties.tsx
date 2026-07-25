@@ -44,7 +44,7 @@ function PropertiesPage() {
   const [editing, setEditing] = useState<Property | null>(null);
   const [creating, setCreating] = useState(false);
 
-  const siteSlug = slugify(user?.company || user?.name || "");
+  const siteSlug = slugify(user?.name || "");
 
   return (
     <div className="p-8">
