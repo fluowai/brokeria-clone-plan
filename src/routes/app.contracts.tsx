@@ -50,7 +50,7 @@ const fmtDate = (iso: string) => new Date(iso + (iso.length === 10 ? "T00:00:00"
 
 function ContractsPage() {
   const { user } = useAuth();
-  const tenantId = user?.tenant?.id ?? "";
+  const tenantId = user?.tenantId ?? "";
   const contracts = useContracts(tenantId);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Contract | null>(null);
