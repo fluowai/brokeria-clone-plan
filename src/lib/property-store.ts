@@ -52,7 +52,19 @@ export const PROPERTY_TYPES: { id: PropertyType; label: string }[] = [
   { id: "studio", label: "Studio" },
   { id: "terreno", label: "Terreno" },
   { id: "comercial", label: "Comercial" },
+  { id: "fazenda", label: "Fazenda" },
+  { id: "sitio", label: "Sítio" },
+  { id: "chacara", label: "Chácara" },
+  { id: "unidade", label: "Unidade / Apto (empreendimento)" },
+  { id: "lote", label: "Lote" },
 ];
+
+export const TYPES_BY_VERTICAL: Record<Vertical, PropertyType[]> = {
+  urban: ["apartamento", "casa", "cobertura", "studio", "terreno", "comercial"],
+  rural: ["fazenda", "sitio", "chacara"],
+  developer: ["unidade"],
+  land: ["lote"],
+};
 
 const KEY = "squadia.properties";
 const listeners = new Set<() => void>();
