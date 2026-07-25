@@ -57,8 +57,8 @@ export const signUp = createServerFn({ method: "POST" })
     }
 
     const tenant = await one<{ id: string }>(
-      "INSERT INTO tenants(name, slug) VALUES($1,$2) RETURNING id",
-      [data.agency, slug],
+      "INSERT INTO tenants(name, slug, vertical, verticals) VALUES($1,$2,$3,ARRAY[$3]::tenant_vertical[]) RETURNING id",
+      [data.agency, slug, data.vertical],
     );
     if (!tenant) throw new Error("Falha ao criar tenant");
 
