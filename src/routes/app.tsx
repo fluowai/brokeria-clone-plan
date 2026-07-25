@@ -42,6 +42,7 @@ function AppShell() {
     { to: "/app", label: "Dashboard" },
     { to: "/app/crm", label: "CRM" },
     { to: "/app/properties", label: "Imóveis" },
+    { to: "/app/ai", label: "Agentes IA" },
   ];
 
   return (
