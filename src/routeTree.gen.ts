@@ -20,6 +20,7 @@ import { Route as AppLotsRouteImport } from './routes/app.lots'
 import { Route as AppFeedsRouteImport } from './routes/app.feeds'
 import { Route as AppDevelopmentsRouteImport } from './routes/app.developments'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
+import { Route as AppContractsRouteImport } from './routes/app.contracts'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppBiRouteImport } from './routes/app.bi'
 import { Route as AppAiRouteImport } from './routes/app.ai'
@@ -82,6 +83,11 @@ const AppCrmRoute = AppCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContractsRoute = AppContractsRouteImport.update({
+  id: '/contracts',
+  path: '/contracts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBillingRoute = AppBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/contracts': typeof AppContractsRoute
   '/app/crm': typeof AppCrmRoute
   '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/contracts': typeof AppContractsRoute
   '/app/crm': typeof AppCrmRoute
   '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
+  '/app/contracts': typeof AppContractsRoute
   '/app/crm': typeof AppCrmRoute
   '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
+    | '/app/contracts'
     | '/app/crm'
     | '/app/developments'
     | '/app/feeds'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
+    | '/app/contracts'
     | '/app/crm'
     | '/app/developments'
     | '/app/feeds'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
+    | '/app/contracts'
     | '/app/crm'
     | '/app/developments'
     | '/app/feeds'
@@ -318,6 +330,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/contracts': {
+      id: '/app/contracts'
+      path: '/contracts'
+      fullPath: '/app/contracts'
+      preLoaderRoute: typeof AppContractsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/billing': {
       id: '/app/billing'
       path: '/billing'
@@ -368,6 +387,7 @@ interface AppRouteChildren {
   AppAiRoute: typeof AppAiRoute
   AppBiRoute: typeof AppBiRoute
   AppBillingRoute: typeof AppBillingRoute
+  AppContractsRoute: typeof AppContractsRoute
   AppCrmRoute: typeof AppCrmRoute
   AppDevelopmentsRoute: typeof AppDevelopmentsRoute
   AppFeedsRoute: typeof AppFeedsRoute
@@ -382,6 +402,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAiRoute: AppAiRoute,
   AppBiRoute: AppBiRoute,
   AppBillingRoute: AppBillingRoute,
+  AppContractsRoute: AppContractsRoute,
   AppCrmRoute: AppCrmRoute,
   AppDevelopmentsRoute: AppDevelopmentsRoute,
   AppFeedsRoute: AppFeedsRoute,
