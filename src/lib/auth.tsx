@@ -9,6 +9,7 @@ export type AuthUser = {
   name: string;
   tenantId: string;
   roles: string[];
+  tenant?: { vertical: string; verticals: string[]; name: string; slug: string } | null;
 };
 
 type AuthCtx = {
