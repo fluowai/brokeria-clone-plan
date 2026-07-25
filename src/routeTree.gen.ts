@@ -18,6 +18,7 @@ import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
 import { Route as AppFeedsRouteImport } from './routes/app.feeds'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
+import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppBiRouteImport } from './routes/app.bi'
 import { Route as AppAiRouteImport } from './routes/app.ai'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
@@ -68,6 +69,11 @@ const AppCrmRoute = AppCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBiRoute = AppBiRouteImport.update({
   id: '/bi',
   path: '/bi',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
+  '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/ai'
     | '/app/bi'
+    | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
     | '/app/properties'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/ai'
     | '/app/bi'
+    | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
     | '/app/properties'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/ai'
     | '/app/bi'
+    | '/app/billing'
     | '/app/crm'
     | '/app/feeds'
     | '/app/properties'
@@ -256,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/billing': {
+      id: '/app/billing'
+      path: '/billing'
+      fullPath: '/app/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/bi': {
       id: '/app/bi'
       path: '/bi'
@@ -290,6 +309,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAiRoute: typeof AppAiRoute
   AppBiRoute: typeof AppBiRoute
+  AppBillingRoute: typeof AppBillingRoute
   AppCrmRoute: typeof AppCrmRoute
   AppFeedsRoute: typeof AppFeedsRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
@@ -300,6 +320,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAiRoute: AppAiRoute,
   AppBiRoute: AppBiRoute,
+  AppBillingRoute: AppBillingRoute,
   AppCrmRoute: AppCrmRoute,
   AppFeedsRoute: AppFeedsRoute,
   AppPropertiesRoute: AppPropertiesRoute,

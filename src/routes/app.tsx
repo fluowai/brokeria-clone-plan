@@ -46,6 +46,7 @@ function AppShell() {
     { to: "/app/whatsapp", label: "WhatsApp" },
     { to: "/app/feeds", label: "Feeds XML" },
     { to: "/app/bi", label: "BI Cockpit" },
+    { to: "/app/billing", label: "Planos & Créditos" },
   ];
 
   return (
