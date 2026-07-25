@@ -1,0 +1,51 @@
+# Portainer stack — SquadIA
+# Deploy: Portainer > Stacks > Add stack > Web editor (cole este arquivo)
+# Depois preencha as variáveis de ambiente na aba "Environment variables".
+#
+# Requer Traefik já rodando com rede externa `traefik-public` e resolver `letsencrypt`.
+# Ajuste host/rede/resolver conforme sua infra.
+
+services:
+  squadia:
+    image: ghcr.io/SEU_USUARIO/squadia:latest   # troque para sua imagem/registry
+    container_name: squadia
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      LOVABLE_API_KEY: ${LOVABLE_API_KEY}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET}
+      META_ADS_ACCESS_TOKEN: ${META_ADS_ACCESS_TOKEN}
+      META_ADS_ACCOUNT_ID: ${META_ADS_ACCOUNT_ID}
+    networks:
+      - traefik-public
+      - squadia-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
+      - "traefik.http.routers.squadia.rule=Host(`${DOMAIN:-squadia.example.com}`)"
+      - "traefik.http.routers.squadia.entrypoints=websecure"
+      - "traefik.http.routers.squadia.tls=true"
+      - "traefik.http.routers.squadia.tls.certresolver=letsencrypt"
+      - "traefik.http.services.squadia.loadbalancer.server.port=3000"
+      # Redirect HTTP -> HTTPS
+      - "traefik.http.routers.squadia-http.rule=Host(`${DOMAIN:-squadia.example.com}`)"
+      - "traefik.http.routers.squadia-http.entrypoints=web"
+      - "traefik.http.routers.squadia-http.middlewares=squadia-https"
+      - "traefik.http.middlewares.squadia-https.redirectscheme.scheme=https"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+networks:
+  traefik-public:
+    external: true
+  squadia-net:
+    driver: bridge

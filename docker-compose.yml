@@ -1,0 +1,36 @@
+services:
+  squadia:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: squadia:latest
+    container_name: squadia
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      # ==== Lovable AI Gateway ====
+      LOVABLE_API_KEY: ${LOVABLE_API_KEY}
+      # ==== WhatsApp Cloud API (Meta) ====
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET}
+      # ==== Meta Ads ====
+      META_ADS_ACCESS_TOKEN: ${META_ADS_ACCESS_TOKEN}
+      META_ADS_ACCOUNT_ID: ${META_ADS_ACCOUNT_ID}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      - squadia-net
+
+networks:
+  squadia-net:
+    driver: bridge
