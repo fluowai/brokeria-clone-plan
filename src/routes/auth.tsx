@@ -83,8 +83,31 @@ function AuthPage() {
                   <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
                 <div>
-                  <Label htmlFor="company">Imobiliária</Label>
-                  <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} />
+                  <Label htmlFor="company">Empresa</Label>
+                  <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} required />
+                </div>
+                <div>
+                  <Label>Segmento</Label>
+                  <div className="mt-2 grid grid-cols-2 gap-2">
+                    {VERTICALS.map((v) => {
+                      const active = vertical === v.id;
+                      return (
+                        <button
+                          type="button"
+                          key={v.id}
+                          onClick={() => setVertical(v.id)}
+                          className={`text-left rounded-md border px-3 py-2 text-xs transition ${
+                            active
+                              ? "border-primary bg-primary/10 text-foreground"
+                              : "border-border/60 text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <div className="font-medium text-sm">{v.label}</div>
+                          <div className="opacity-70">{v.desc}</div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </>
             )}
