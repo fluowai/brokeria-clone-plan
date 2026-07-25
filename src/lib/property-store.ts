@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-export type PropertyType = "apartamento" | "casa" | "cobertura" | "studio" | "terreno" | "comercial";
+export type PropertyType = "apartamento" | "casa" | "cobertura" | "studio" | "terreno" | "comercial" | "fazenda" | "sitio" | "chacara" | "unidade" | "lote";
 export type PropertyPurpose = "venda" | "aluguel";
+export type Vertical = "urban" | "rural" | "developer" | "land";
 
 export type Property = {
   id: string;
@@ -21,6 +22,27 @@ export type Property = {
   images: string[]; // data URLs
   featured: boolean;
   createdAt: number;
+  vertical?: Vertical;
+  // Rural
+  areaHectares?: number;
+  atividade?: "pecuaria" | "agricola" | "misto" | "";
+  agua?: "acude" | "rio" | "poco" | "nenhum" | "";
+  energia?: boolean;
+  carCode?: string;
+  matricula?: string;
+  itr?: string;
+  topografia?: string;
+  distanciaCidadeKm?: number;
+  // Developer (incorporadora)
+  developmentName?: string;
+  tipologia?: string;
+  andar?: number;
+  posicaoSolar?: string;
+  // Land (loteadora)
+  quadra?: string;
+  lote?: string;
+  frenteM?: number;
+  parcelamentoName?: string;
 };
 
 export const PROPERTY_TYPES: { id: PropertyType; label: string }[] = [
@@ -30,7 +52,19 @@ export const PROPERTY_TYPES: { id: PropertyType; label: string }[] = [
   { id: "studio", label: "Studio" },
   { id: "terreno", label: "Terreno" },
   { id: "comercial", label: "Comercial" },
+  { id: "fazenda", label: "Fazenda" },
+  { id: "sitio", label: "Sítio" },
+  { id: "chacara", label: "Chácara" },
+  { id: "unidade", label: "Unidade / Apto (empreendimento)" },
+  { id: "lote", label: "Lote" },
 ];
+
+export const TYPES_BY_VERTICAL: Record<Vertical, PropertyType[]> = {
+  urban: ["apartamento", "casa", "cobertura", "studio", "terreno", "comercial"],
+  rural: ["fazenda", "sitio", "chacara"],
+  developer: ["unidade"],
+  land: ["lote"],
+};
 
 const KEY = "squadia.properties";
 const listeners = new Set<() => void>();

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
-import { propertyStore, useProperties, PROPERTY_TYPES, fileToDataURL, slugify, type Property, type PropertyType, type PropertyPurpose } from "@/lib/property-store";
+import { propertyStore, useProperties, PROPERTY_TYPES, TYPES_BY_VERTICAL, fileToDataURL, slugify, type Property, type PropertyType, type PropertyPurpose, type Vertical } from "@/lib/property-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,27 +30,40 @@ export const Route = createFileRoute("/app/properties")({
   ),
 });
 
-const EMPTY: Omit<Property, "id" | "createdAt" | "ownerId"> = {
-  title: "", type: "apartamento", purpose: "venda", price: 0,
-  address: "", city: "", neighborhood: "",
-  bedrooms: 1, bathrooms: 1, parking: 0, area: 0,
-  description: "", images: [], featured: false,
+const VERTICAL_LABELS: Record<Vertical, { title: string; cta: string; defaultType: PropertyType }> = {
+  urban: { title: "Imóveis", cta: "Novo imóvel", defaultType: "apartamento" },
+  rural: { title: "Fazendas & Sítios", cta: "Nova propriedade rural", defaultType: "fazenda" },
+  developer: { title: "Unidades do Empreendimento", cta: "Nova unidade", defaultType: "unidade" },
+  land: { title: "Lotes", cta: "Novo lote", defaultType: "lote" },
 };
+
+function emptyFor(vertical: Vertical): Omit<Property, "id" | "createdAt" | "ownerId"> {
+  return {
+    title: "", type: VERTICAL_LABELS[vertical].defaultType, purpose: "venda", price: 0,
+    address: "", city: "", neighborhood: "",
+    bedrooms: vertical === "urban" || vertical === "developer" ? 1 : 0,
+    bathrooms: vertical === "urban" || vertical === "developer" ? 1 : 0,
+    parking: 0, area: 0,
+    description: "", images: [], featured: false, vertical,
+  };
+}
 
 function PropertiesPage() {
   const { user } = useAuth();
+  const vertical = (user?.tenant?.vertical as Vertical) || "urban";
   useEffect(() => { if (user) propertyStore.seed(user.id); }, [user]);
   const properties = useProperties(user?.id);
   const [editing, setEditing] = useState<Property | null>(null);
   const [creating, setCreating] = useState(false);
 
   const siteSlug = slugify(user?.name || "");
+  const labels = VERTICAL_LABELS[vertical];
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Imóveis</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{labels.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Seu site público:{" "}
             <a href={`/site/${siteSlug}`} target="_blank" className="text-primary hover:underline">
@@ -59,14 +72,15 @@ function PropertiesPage() {
           </p>
         </div>
         <Dialog open={creating} onOpenChange={setCreating}>
-          <DialogTrigger asChild><Button>+ Novo imóvel</Button></DialogTrigger>
-          <PropertyForm initial={EMPTY} onSubmit={(data) => {
+          <DialogTrigger asChild><Button>+ {labels.cta}</Button></DialogTrigger>
+          <PropertyForm vertical={vertical} initial={emptyFor(vertical)} onSubmit={(data) => {
             propertyStore.add({ ...data, ownerId: user!.id });
-            toast.success("Imóvel cadastrado");
+            toast.success("Cadastrado com sucesso");
             setCreating(false);
-          }} title="Novo imóvel" />
+          }} title={labels.cta} />
         </Dialog>
       </div>
+
 
       {properties.length === 0 ? (
         <Card className="mt-8 p-12 text-center bg-card/40 border-dashed">
@@ -107,16 +121,17 @@ function PropertiesPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         {editing && (
           <PropertyForm
+            vertical={vertical}
             initial={editing}
-            title="Editar imóvel"
+            title="Editar"
             onDelete={() => {
               propertyStore.remove(editing.id);
-              toast.success("Imóvel removido");
+              toast.success("Removido");
               setEditing(null);
             }}
             onSubmit={(data) => {
               propertyStore.update(editing.id, data);
-              toast.success("Imóvel atualizado");
+              toast.success("Atualizado");
               setEditing(null);
             }}
           />
@@ -127,10 +142,11 @@ function PropertiesPage() {
 }
 
 function PropertyForm({
-  initial, title, onSubmit, onDelete,
+  initial, title, onSubmit, onDelete, vertical,
 }: {
   initial: Omit<Property, "id" | "createdAt" | "ownerId"> | Property;
   title: string;
+  vertical: Vertical;
   onSubmit: (data: Omit<Property, "id" | "createdAt" | "ownerId">) => void;
   onDelete?: () => void;
 }) {
@@ -143,10 +159,16 @@ function PropertyForm({
     set("images", [...form.images, ...list].slice(0, 12));
   };
 
+  const allowedTypes = TYPES_BY_VERTICAL[vertical];
+  const showRooms = vertical === "urban" || vertical === "developer";
+  const showRural = vertical === "rural";
+  const showDev = vertical === "developer";
+  const showLand = vertical === "land";
+
   return (
     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader><DialogTitle>{title}</DialogTitle></DialogHeader>
-      <form onSubmit={(e) => { e.preventDefault(); onSubmit(form); }} className="space-y-3">
+      <form onSubmit={(e) => { e.preventDefault(); onSubmit({ ...form, vertical }); }} className="space-y-3">
         <div>
           <Label>Título</Label>
           <Input value={form.title} onChange={(e) => set("title", e.target.value)} required />
@@ -157,7 +179,7 @@ function PropertyForm({
             <Select value={form.type} onValueChange={(v) => set("type", v as PropertyType)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {PROPERTY_TYPES.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
+                {PROPERTY_TYPES.filter((t) => allowedTypes.includes(t.id)).map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -178,15 +200,86 @@ function PropertyForm({
             <Input type="number" value={form.price} onChange={(e) => set("price", Number(e.target.value))} required />
           </div>
           <div>
-            <Label>Área (m²)</Label>
+            <Label>{showRural ? "Área (m² construído)" : "Área (m²)"}</Label>
             <Input type="number" value={form.area} onChange={(e) => set("area", Number(e.target.value))} />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div><Label>Quartos</Label><Input type="number" value={form.bedrooms} onChange={(e) => set("bedrooms", Number(e.target.value))} /></div>
-          <div><Label>Banheiros</Label><Input type="number" value={form.bathrooms} onChange={(e) => set("bathrooms", Number(e.target.value))} /></div>
-          <div><Label>Vagas</Label><Input type="number" value={form.parking} onChange={(e) => set("parking", Number(e.target.value))} /></div>
-        </div>
+
+        {showRooms && (
+          <div className="grid grid-cols-3 gap-3">
+            <div><Label>Quartos</Label><Input type="number" value={form.bedrooms} onChange={(e) => set("bedrooms", Number(e.target.value))} /></div>
+            <div><Label>Banheiros</Label><Input type="number" value={form.bathrooms} onChange={(e) => set("bathrooms", Number(e.target.value))} /></div>
+            <div><Label>Vagas</Label><Input type="number" value={form.parking} onChange={(e) => set("parking", Number(e.target.value))} /></div>
+          </div>
+        )}
+
+        {showRural && (
+          <div className="rounded-md border border-border/60 p-3 space-y-3">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Dados rurais</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Área (hectares)</Label><Input type="number" step="0.01" value={form.areaHectares ?? 0} onChange={(e) => set("areaHectares", Number(e.target.value))} /></div>
+              <div><Label>Distância da cidade (km)</Label><Input type="number" step="0.1" value={form.distanciaCidadeKm ?? 0} onChange={(e) => set("distanciaCidadeKm", Number(e.target.value))} /></div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Atividade</Label>
+                <Select value={form.atividade || ""} onValueChange={(v) => set("atividade", v as Property["atividade"])}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pecuaria">Pecuária</SelectItem>
+                    <SelectItem value="agricola">Agrícola</SelectItem>
+                    <SelectItem value="misto">Misto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Água</Label>
+                <Select value={form.agua || ""} onValueChange={(v) => set("agua", v as Property["agua"])}>
+                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="acude">Açude</SelectItem>
+                    <SelectItem value="rio">Rio</SelectItem>
+                    <SelectItem value="poco">Poço</SelectItem>
+                    <SelectItem value="nenhum">Nenhum</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label>Topografia</Label><Input value={form.topografia ?? ""} onChange={(e) => set("topografia", e.target.value)} placeholder="plano, ondulado..." /></div>
+              <div className="flex items-end gap-2"><Switch id="energia" checked={!!form.energia} onCheckedChange={(v) => set("energia", v)} /><Label htmlFor="energia">Energia elétrica</Label></div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>CAR</Label><Input value={form.carCode ?? ""} onChange={(e) => set("carCode", e.target.value)} /></div>
+              <div><Label>Matrícula</Label><Input value={form.matricula ?? ""} onChange={(e) => set("matricula", e.target.value)} /></div>
+              <div><Label>ITR</Label><Input value={form.itr ?? ""} onChange={(e) => set("itr", e.target.value)} /></div>
+            </div>
+          </div>
+        )}
+
+        {showDev && (
+          <div className="rounded-md border border-border/60 p-3 space-y-3">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Empreendimento</div>
+            <div><Label>Nome do empreendimento</Label><Input value={form.developmentName ?? ""} onChange={(e) => set("developmentName", e.target.value)} /></div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>Tipologia</Label><Input value={form.tipologia ?? ""} onChange={(e) => set("tipologia", e.target.value)} placeholder="2 dorm, 65m²" /></div>
+              <div><Label>Andar</Label><Input type="number" value={form.andar ?? 0} onChange={(e) => set("andar", Number(e.target.value))} /></div>
+              <div><Label>Posição solar</Label><Input value={form.posicaoSolar ?? ""} onChange={(e) => set("posicaoSolar", e.target.value)} placeholder="Nascente..." /></div>
+            </div>
+          </div>
+        )}
+
+        {showLand && (
+          <div className="rounded-md border border-border/60 p-3 space-y-3">
+            <div className="text-xs uppercase tracking-wide text-muted-foreground">Lote</div>
+            <div><Label>Loteamento</Label><Input value={form.parcelamentoName ?? ""} onChange={(e) => set("parcelamentoName", e.target.value)} /></div>
+            <div className="grid grid-cols-3 gap-3">
+              <div><Label>Quadra</Label><Input value={form.quadra ?? ""} onChange={(e) => set("quadra", e.target.value)} /></div>
+              <div><Label>Lote</Label><Input value={form.lote ?? ""} onChange={(e) => set("lote", e.target.value)} /></div>
+              <div><Label>Frente (m)</Label><Input type="number" step="0.01" value={form.frenteM ?? 0} onChange={(e) => set("frenteM", Number(e.target.value))} /></div>
+            </div>
+          </div>
+        )}
         <div>
           <Label>Endereço</Label>
           <Input value={form.address} onChange={(e) => set("address", e.target.value)} />
