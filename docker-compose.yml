@@ -6,30 +6,95 @@ services:
     image: squadia:latest
     container_name: squadia
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       HOST: 0.0.0.0
-      # ==== Lovable AI Gateway ====
+      DATABASE_URL: postgres://squadia:${POSTGRES_PASSWORD}@postgres:5432/squadia
+      AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_BUCKET: ${S3_BUCKET:-squadia}
+      S3_ACCESS_KEY: ${MINIO_ROOT_USER}
+      S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://localhost:9000/squadia}
       LOVABLE_API_KEY: ${LOVABLE_API_KEY}
-      # ==== WhatsApp Cloud API (Meta) ====
       WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN}
       WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID}
       WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN}
       WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET}
-      # ==== Meta Ads ====
       META_ADS_ACCESS_TOKEN: ${META_ADS_ACCESS_TOKEN}
       META_ADS_ACCOUNT_ID: ${META_ADS_ACCOUNT_ID}
+    entrypoint: ["/bin/sh","-c","node scripts/migrate.mjs && node .output/server/index.mjs"]
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 20s
-    networks:
-      - squadia-net
+      start_period: 30s
+    networks: [squadia-net]
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: squadia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: squadia
+      POSTGRES_USER: squadia
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U squadia -d squadia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [squadia-net]
+
+  minio:
+    image: minio/minio:latest
+    container_name: squadia-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks: [squadia-net]
+
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        sleep 5;
+        mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD;
+        mc mb --ignore-existing local/$$S3_BUCKET;
+        mc anonymous set download local/$$S3_BUCKET;
+        exit 0
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      S3_BUCKET: ${S3_BUCKET:-squadia}
+    networks: [squadia-net]
+
+volumes:
+  pgdata:
+  minio-data:
 
 networks:
   squadia-net:

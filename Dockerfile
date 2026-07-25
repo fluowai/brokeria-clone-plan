@@ -1,4 +1,3 @@
-# Multi-stage build for TanStack Start (SquadIA)
 FROM node:20-alpine AS deps
 WORKDIR /app
 RUN apk add --no-cache libc6-compat
@@ -18,12 +17,13 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 squadia
-COPY --from=builder --chown=squadia:nodejs /app/.output ./.output
-COPY --from=builder --chown=squadia:nodejs /app/package.json ./package.json
-USER squadia
+RUN apk add --no-cache wget
+COPY --from=builder /app/.output ./.output
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/db ./db
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1
-CMD ["node", ".output/server/index.mjs"]
+CMD ["sh","-c","node scripts/migrate.mjs && node .output/server/index.mjs"]
