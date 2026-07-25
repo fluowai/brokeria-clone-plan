@@ -25,10 +25,19 @@ export const Route = createFileRoute("/auth")({
   ),
 });
 
+type Vertical = "urban" | "rural" | "developer" | "land";
+const VERTICALS: { id: Vertical; label: string; desc: string }[] = [
+  { id: "urban", label: "Imobiliária Urbana", desc: "Apartamentos, casas, comercial" },
+  { id: "rural", label: "Imobiliária Rural", desc: "Fazendas, sítios, chácaras" },
+  { id: "developer", label: "Incorporadora / Construtora", desc: "Empreendimentos, unidades, tabelas" },
+  { id: "land", label: "Loteadora", desc: "Loteamentos, lotes, parcelamento" },
+];
+
 function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
+  const [vertical, setVertical] = useState<Vertical>("urban");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -42,7 +51,7 @@ function AuthPage() {
       if (mode === "signin") {
         await signIn(email, password);
       } else {
-        await signUp({ name, email, password, agency: company });
+        await signUp({ name, email, password, agency: company, vertical });
       }
       toast.success(mode === "signin" ? "Bem-vindo de volta!" : "Conta criada!");
       navigate({ to: "/app" });
