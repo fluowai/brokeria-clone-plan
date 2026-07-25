@@ -20,6 +20,7 @@ const signUpSchema = z.object({
   password: z.string().min(6),
   name: z.string().min(2),
   agency: z.string().min(2),
+  vertical: z.enum(["urban", "rural", "developer", "land"]).default("urban"),
 });
 
 async function issueSession(user: { id: string; tenant_id: string; email: string; name: string }) {
