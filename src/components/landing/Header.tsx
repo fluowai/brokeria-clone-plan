@@ -50,6 +50,9 @@ export function Header() {
               </button>
             ))}
           </div>
+          <a href="/auth" className="hidden rounded-md px-3 py-2 text-sm text-muted-foreground transition hover:text-foreground md:inline-block">
+            Entrar
+          </a>
           <a href="#trial" className="hidden rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:brightness-110 md:inline-block">
             {t.nav.trial}
           </a>
