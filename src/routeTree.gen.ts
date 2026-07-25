@@ -16,6 +16,8 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
+import { Route as AppAiRouteImport } from './routes/app.ai'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -52,11 +54,23 @@ const AppCrmRoute = AppCrmRouteImport.update({
   path: '/crm',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAiRoute = AppAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AppRoute,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -65,6 +79,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -75,6 +91,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/api/chat': typeof ApiChatRoute
+  '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -86,17 +104,29 @@ export interface FileRouteTypes {
     | '/'
     | '/app'
     | '/auth'
+    | '/api/chat'
+    | '/app/ai'
     | '/app/crm'
     | '/app/properties'
     | '/site/$slug'
     | '/app/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/app/crm' | '/app/properties' | '/site/$slug' | '/app'
+  to:
+    | '/'
+    | '/auth'
+    | '/api/chat'
+    | '/app/ai'
+    | '/app/crm'
+    | '/app/properties'
+    | '/site/$slug'
+    | '/app'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/auth'
+    | '/api/chat'
+    | '/app/ai'
     | '/app/crm'
     | '/app/properties'
     | '/site/$slug'
@@ -107,6 +137,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiChatRoute: typeof ApiChatRoute
   SiteSlugRoute: typeof SiteSlugRoute
 }
 
@@ -161,16 +192,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCrmRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/ai': {
+      id: '/app/ai'
+      path: '/ai'
+      fullPath: '/app/ai'
+      preLoaderRoute: typeof AppAiRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAiRoute: typeof AppAiRoute
   AppCrmRoute: typeof AppCrmRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAiRoute: AppAiRoute,
   AppCrmRoute: AppCrmRoute,
   AppPropertiesRoute: AppPropertiesRoute,
   AppIndexRoute: AppIndexRoute,
@@ -182,6 +229,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiChatRoute: ApiChatRoute,
   SiteSlugRoute: SiteSlugRoute,
 }
 export const routeTree = rootRouteImport
