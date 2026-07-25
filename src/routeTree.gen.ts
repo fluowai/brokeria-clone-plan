@@ -18,6 +18,7 @@ import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
 import { Route as AppLotsRouteImport } from './routes/app.lots'
 import { Route as AppFeedsRouteImport } from './routes/app.feeds'
+import { Route as AppDevelopmentsRouteImport } from './routes/app.developments'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppBiRouteImport } from './routes/app.bi'
@@ -71,6 +72,11 @@ const AppFeedsRoute = AppFeedsRouteImport.update({
   path: '/feeds',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDevelopmentsRoute = AppDevelopmentsRouteImport.update({
+  id: '/developments',
+  path: '/developments',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmRoute = AppCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/developments': typeof AppDevelopmentsRoute
   '/app/feeds': typeof AppFeedsRoute
   '/app/lots': typeof AppLotsRoute
   '/app/properties': typeof AppPropertiesRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/app/bi'
     | '/app/billing'
     | '/app/crm'
+    | '/app/developments'
     | '/app/feeds'
     | '/app/lots'
     | '/app/properties'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/app/bi'
     | '/app/billing'
     | '/app/crm'
+    | '/app/developments'
     | '/app/feeds'
     | '/app/lots'
     | '/app/properties'
@@ -209,6 +220,7 @@ export interface FileRouteTypes {
     | '/app/bi'
     | '/app/billing'
     | '/app/crm'
+    | '/app/developments'
     | '/app/feeds'
     | '/app/lots'
     | '/app/properties'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppFeedsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/developments': {
+      id: '/app/developments'
+      path: '/developments'
+      fullPath: '/app/developments'
+      preLoaderRoute: typeof AppDevelopmentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm': {
       id: '/app/crm'
       path: '/crm'
@@ -350,6 +369,7 @@ interface AppRouteChildren {
   AppBiRoute: typeof AppBiRoute
   AppBillingRoute: typeof AppBillingRoute
   AppCrmRoute: typeof AppCrmRoute
+  AppDevelopmentsRoute: typeof AppDevelopmentsRoute
   AppFeedsRoute: typeof AppFeedsRoute
   AppLotsRoute: typeof AppLotsRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
@@ -363,6 +383,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBiRoute: AppBiRoute,
   AppBillingRoute: AppBillingRoute,
   AppCrmRoute: AppCrmRoute,
+  AppDevelopmentsRoute: AppDevelopmentsRoute,
   AppFeedsRoute: AppFeedsRoute,
   AppLotsRoute: AppLotsRoute,
   AppPropertiesRoute: AppPropertiesRoute,
@@ -383,13 +404,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

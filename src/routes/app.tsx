@@ -48,6 +48,7 @@ function AppShell() {
     { to: "/app/crm", label: "CRM" },
     { to: "/app/properties", label: propertiesLabel },
     ...(v === "land" ? [{ to: "/app/lots", label: "Mapa de Lotes" }] : []),
+    ...(v === "developer" ? [{ to: "/app/developments", label: "Espelho de Vendas" }] : []),
     ...(v === "developer" || v === "land" ? [{ to: "/app/contracts", label: "Contratos" }] : []),
     { to: "/app/ai", label: "Agentes IA" },
     { to: "/app/whatsapp", label: "WhatsApp" },
