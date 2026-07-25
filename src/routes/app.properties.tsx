@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
-import { propertyStore, useProperties, PROPERTY_TYPES, fileToDataURL, slugify, type Property, type PropertyType, type PropertyPurpose } from "@/lib/property-store";
+import { propertyStore, useProperties, PROPERTY_TYPES, TYPES_BY_VERTICAL, fileToDataURL, slugify, type Property, type PropertyType, type PropertyPurpose, type Vertical } from "@/lib/property-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
