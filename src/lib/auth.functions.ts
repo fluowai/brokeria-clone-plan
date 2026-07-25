@@ -113,6 +113,10 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
 export const me = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
+    const tenant = await one<{ vertical: string; verticals: string[]; name: string; slug: string }>(
+      "SELECT vertical, verticals, name, slug FROM tenants WHERE id=$1",
+      [context.auth.tid],
+    );
     return {
       user: {
         id: context.auth.sub,
@@ -120,6 +124,7 @@ export const me = createServerFn({ method: "GET" })
         name: context.auth.name,
         tenantId: context.auth.tid,
         roles: context.auth.roles,
+        tenant: tenant ?? null,
       },
     };
   });
