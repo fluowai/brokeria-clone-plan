@@ -14,6 +14,7 @@ import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
+import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
 import { Route as AppAiRouteImport } from './routes/app.ai'
@@ -44,6 +45,11 @@ const SiteSlugRoute = SiteSlugRouteImport.update({
   id: '/site/$slug',
   path: '/site/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppWhatsappRoute = AppWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppPropertiesRoute = AppPropertiesRouteImport.update({
   id: '/properties',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
   '/app/': typeof AppIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
   '/app': typeof AppIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/app/ai': typeof AppAiRoute
   '/app/crm': typeof AppCrmRoute
   '/app/properties': typeof AppPropertiesRoute
+  '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
   '/app/': typeof AppIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
@@ -118,6 +127,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/crm'
     | '/app/properties'
+    | '/app/whatsapp'
     | '/site/$slug'
     | '/app/'
     | '/api/public/whatsapp/webhook'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/crm'
     | '/app/properties'
+    | '/app/whatsapp'
     | '/site/$slug'
     | '/app'
     | '/api/public/whatsapp/webhook'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '/app/ai'
     | '/app/crm'
     | '/app/properties'
+    | '/app/whatsapp'
     | '/site/$slug'
     | '/app/'
     | '/api/public/whatsapp/webhook'
@@ -192,6 +204,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/whatsapp': {
+      id: '/app/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/app/whatsapp'
+      preLoaderRoute: typeof AppWhatsappRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/properties': {
       id: '/app/properties'
       path: '/properties'
@@ -234,6 +253,7 @@ interface AppRouteChildren {
   AppAiRoute: typeof AppAiRoute
   AppCrmRoute: typeof AppCrmRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
+  AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
 }
 
@@ -241,6 +261,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAiRoute: AppAiRoute,
   AppCrmRoute: AppCrmRoute,
   AppPropertiesRoute: AppPropertiesRoute,
+  AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
 }
 
@@ -257,3 +278,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
