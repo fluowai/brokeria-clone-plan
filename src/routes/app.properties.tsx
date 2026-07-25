@@ -30,27 +30,40 @@ export const Route = createFileRoute("/app/properties")({
   ),
 });
 
-const EMPTY: Omit<Property, "id" | "createdAt" | "ownerId"> = {
-  title: "", type: "apartamento", purpose: "venda", price: 0,
-  address: "", city: "", neighborhood: "",
-  bedrooms: 1, bathrooms: 1, parking: 0, area: 0,
-  description: "", images: [], featured: false,
+const VERTICAL_LABELS: Record<Vertical, { title: string; cta: string; defaultType: PropertyType }> = {
+  urban: { title: "Imóveis", cta: "Novo imóvel", defaultType: "apartamento" },
+  rural: { title: "Fazendas & Sítios", cta: "Nova propriedade rural", defaultType: "fazenda" },
+  developer: { title: "Unidades do Empreendimento", cta: "Nova unidade", defaultType: "unidade" },
+  land: { title: "Lotes", cta: "Novo lote", defaultType: "lote" },
 };
+
+function emptyFor(vertical: Vertical): Omit<Property, "id" | "createdAt" | "ownerId"> {
+  return {
+    title: "", type: VERTICAL_LABELS[vertical].defaultType, purpose: "venda", price: 0,
+    address: "", city: "", neighborhood: "",
+    bedrooms: vertical === "urban" || vertical === "developer" ? 1 : 0,
+    bathrooms: vertical === "urban" || vertical === "developer" ? 1 : 0,
+    parking: 0, area: 0,
+    description: "", images: [], featured: false, vertical,
+  };
+}
 
 function PropertiesPage() {
   const { user } = useAuth();
+  const vertical = (user?.tenant?.vertical as Vertical) || "urban";
   useEffect(() => { if (user) propertyStore.seed(user.id); }, [user]);
   const properties = useProperties(user?.id);
   const [editing, setEditing] = useState<Property | null>(null);
   const [creating, setCreating] = useState(false);
 
   const siteSlug = slugify(user?.name || "");
+  const labels = VERTICAL_LABELS[vertical];
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Imóveis</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{labels.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Seu site público:{" "}
             <a href={`/site/${siteSlug}`} target="_blank" className="text-primary hover:underline">
@@ -59,14 +72,15 @@ function PropertiesPage() {
           </p>
         </div>
         <Dialog open={creating} onOpenChange={setCreating}>
-          <DialogTrigger asChild><Button>+ Novo imóvel</Button></DialogTrigger>
-          <PropertyForm initial={EMPTY} onSubmit={(data) => {
+          <DialogTrigger asChild><Button>+ {labels.cta}</Button></DialogTrigger>
+          <PropertyForm vertical={vertical} initial={emptyFor(vertical)} onSubmit={(data) => {
             propertyStore.add({ ...data, ownerId: user!.id });
-            toast.success("Imóvel cadastrado");
+            toast.success("Cadastrado com sucesso");
             setCreating(false);
-          }} title="Novo imóvel" />
+          }} title={labels.cta} />
         </Dialog>
       </div>
+
 
       {properties.length === 0 ? (
         <Card className="mt-8 p-12 text-center bg-card/40 border-dashed">
