@@ -121,16 +121,17 @@ function PropertiesPage() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         {editing && (
           <PropertyForm
+            vertical={vertical}
             initial={editing}
-            title="Editar imóvel"
+            title="Editar"
             onDelete={() => {
               propertyStore.remove(editing.id);
-              toast.success("Imóvel removido");
+              toast.success("Removido");
               setEditing(null);
             }}
             onSubmit={(data) => {
               propertyStore.update(editing.id, data);
-              toast.success("Imóvel atualizado");
+              toast.success("Atualizado");
               setEditing(null);
             }}
           />
