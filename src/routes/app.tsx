@@ -41,6 +41,7 @@ function AppShell() {
   const nav = [
     { to: "/app", label: "Dashboard" },
     { to: "/app/crm", label: "CRM" },
+    { to: "/app/properties", label: "Imóveis" },
   ];
 
   return (
