@@ -43,6 +43,7 @@ function AppShell() {
     { to: "/app/crm", label: "CRM" },
     { to: "/app/properties", label: "Imóveis" },
     { to: "/app/ai", label: "Agentes IA" },
+    { to: "/app/whatsapp", label: "WhatsApp" },
   ];
 
   return (
