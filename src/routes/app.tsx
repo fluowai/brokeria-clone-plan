@@ -47,6 +47,7 @@ function AppShell() {
     { to: "/app/feeds", label: "Feeds XML" },
     { to: "/app/bi", label: "BI Cockpit" },
     { to: "/app/billing", label: "Planos & Créditos" },
+    ...(user.roles?.includes("super_admin") ? [{ to: "/app/admin", label: "Super Admin" }] : []),
   ];
 
   return (

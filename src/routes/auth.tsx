@@ -38,17 +38,19 @@ function AuthPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const res =
-      mode === "signin"
-        ? await signIn(email, password)
-        : await signUp(name, email, password, company);
-    setLoading(false);
-    if (res.error) {
-      toast.error(res.error);
-      return;
+    try {
+      if (mode === "signin") {
+        await signIn(email, password);
+      } else {
+        await signUp({ name, email, password, agency: company });
+      }
+      toast.success(mode === "signin" ? "Bem-vindo de volta!" : "Conta criada!");
+      navigate({ to: "/app" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao autenticar");
+    } finally {
+      setLoading(false);
     }
-    toast.success(mode === "signin" ? "Bem-vindo de volta!" : "Conta criada!");
-    navigate({ to: "/app" });
   };
 
   return (

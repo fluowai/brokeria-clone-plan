@@ -34,7 +34,7 @@ function FeedsPage() {
 
   const xml = useMemo(() => {
     if (!user) return "";
-    const agency = { name: user.company || user.name, email: user.email };
+    const agency = { name: user.name, email: user.email };
     return format === "zap" ? buildZapFeed(properties, agency) : buildOlxFeed(properties, agency);
   }, [format, properties, user]);
 

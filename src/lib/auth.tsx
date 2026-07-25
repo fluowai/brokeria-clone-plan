@@ -1,90 +1,73 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { me, signIn as signInFn, signUp as signUpFn, signOut as signOutFn } from "./auth.functions";
 
-export type User = { id: string; name: string; email: string; company?: string };
-
-type AuthState = {
-  user: User | null;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error?: string }>;
-  signUp: (name: string, email: string, password: string, company?: string) => Promise<{ error?: string }>;
-  signOut: () => void;
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  tenantId: string;
+  roles: string[];
 };
 
-const AuthCtx = createContext<AuthState | null>(null);
-const STORAGE_KEY = "squadia.auth.user";
-const USERS_KEY = "squadia.auth.users";
+type AuthCtx = {
+  user: AuthUser | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (input: { email: string; password: string; name: string; agency: string }) => Promise<void>;
+  signOut: () => Promise<void>;
+};
 
-type StoredUser = User & { password: string };
+const Ctx = createContext<AuthCtx | null>(null);
 
-function readUsers(): StoredUser[] {
-  if (typeof window === "undefined") return [];
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-  } catch {
-    return [];
-  }
-}
-function writeUsers(u: StoredUser[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(u));
-}
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const meCall = useServerFn(me);
+  const signInCall = useServerFn(signInFn);
+  const signUpCall = useServerFn(signUpFn);
+  const signOutCall = useServerFn(signOutFn);
+  const qc = useQueryClient();
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const q = useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      try {
+        const r = await meCall();
+        return r.user as AuthUser;
+      } catch {
+        return null;
+      }
+    },
+    staleTime: 30_000,
+  });
+
+  const value: AuthCtx = {
+    user: q.data ?? null,
+    loading: q.isLoading,
+    async signIn(email, password) {
+      await signInCall({ data: { email, password } });
+      await qc.invalidateQueries({ queryKey: ["me"] });
+    },
+    async signUp(input) {
+      await signUpCall({ data: input });
+      await qc.invalidateQueries({ queryKey: ["me"] });
+    },
+    async signOut() {
+      await signOutCall({});
+      await qc.invalidateQueries({ queryKey: ["me"] });
+      qc.clear();
+    },
+  };
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setUser(JSON.parse(raw));
-    } catch {}
-    setLoading(false);
+    // No-op; kept for parity with old provider
   }, []);
 
-  const persist = (u: User | null) => {
-    setUser(u);
-    if (u) localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
-    else localStorage.removeItem(STORAGE_KEY);
-  };
-
-  const signIn: AuthState["signIn"] = async (email, password) => {
-    const users = readUsers();
-    const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
-    if (!found) return { error: "Usuário não encontrado" };
-    if (found.password !== password) return { error: "Senha incorreta" };
-    const { password: _p, ...safe } = found;
-    persist(safe);
-    return {};
-  };
-
-  const signUp: AuthState["signUp"] = async (name, email, password, company) => {
-    const users = readUsers();
-    if (users.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      return { error: "Email já cadastrado" };
-    }
-    const newUser: StoredUser = {
-      id: crypto.randomUUID(),
-      name,
-      email,
-      company,
-      password,
-    };
-    writeUsers([...users, newUser]);
-    const { password: _p, ...safe } = newUser;
-    persist(safe);
-    return {};
-  };
-
-  const signOut = () => persist(null);
-
-  return (
-    <AuthCtx.Provider value={{ user, loading, signIn, signUp, signOut }}>
-      {children}
-    </AuthCtx.Provider>
-  );
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthCtx);
+  const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 }

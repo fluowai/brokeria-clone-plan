@@ -21,6 +21,7 @@ import { Route as AppCrmRouteImport } from './routes/app.crm'
 import { Route as AppBillingRouteImport } from './routes/app.billing'
 import { Route as AppBiRouteImport } from './routes/app.bi'
 import { Route as AppAiRouteImport } from './routes/app.ai'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp.webhook'
 
@@ -84,6 +85,11 @@ const AppAiRoute = AppAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 const ApiChatRoute = ApiChatRouteImport.update({
   id: '/api/chat',
   path: '/api/chat',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
+  '/app/admin': typeof AppAdminRoute
   '/app/ai': typeof AppAiRoute
   '/app/bi': typeof AppBiRoute
   '/app/billing': typeof AppBillingRoute
@@ -151,6 +160,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/api/chat'
+    | '/app/admin'
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/api/chat'
+    | '/app/admin'
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/auth'
     | '/api/chat'
+    | '/app/admin'
     | '/app/ai'
     | '/app/bi'
     | '/app/billing'
@@ -289,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAiRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -307,6 +326,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
   AppAiRoute: typeof AppAiRoute
   AppBiRoute: typeof AppBiRoute
   AppBillingRoute: typeof AppBillingRoute
@@ -318,6 +338,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
   AppAiRoute: AppAiRoute,
   AppBiRoute: AppBiRoute,
   AppBillingRoute: AppBillingRoute,
