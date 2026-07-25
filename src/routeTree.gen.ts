@@ -16,7 +16,9 @@ import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as SiteSlugRouteImport } from './routes/site.$slug'
 import { Route as AppWhatsappRouteImport } from './routes/app.whatsapp'
 import { Route as AppPropertiesRouteImport } from './routes/app.properties'
+import { Route as AppFeedsRouteImport } from './routes/app.feeds'
 import { Route as AppCrmRouteImport } from './routes/app.crm'
+import { Route as AppBiRouteImport } from './routes/app.bi'
 import { Route as AppAiRouteImport } from './routes/app.ai'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp.webhook'
@@ -56,9 +58,19 @@ const AppPropertiesRoute = AppPropertiesRouteImport.update({
   path: '/properties',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFeedsRoute = AppFeedsRouteImport.update({
+  id: '/feeds',
+  path: '/feeds',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCrmRoute = AppCrmRouteImport.update({
   id: '/crm',
   path: '/crm',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBiRoute = AppBiRouteImport.update({
+  id: '/bi',
+  path: '/bi',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAiRoute = AppAiRouteImport.update({
@@ -84,7 +96,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
+  '/app/bi': typeof AppBiRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -96,7 +110,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
+  '/app/bi': typeof AppBiRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -110,7 +126,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/api/chat': typeof ApiChatRoute
   '/app/ai': typeof AppAiRoute
+  '/app/bi': typeof AppBiRoute
   '/app/crm': typeof AppCrmRoute
+  '/app/feeds': typeof AppFeedsRoute
   '/app/properties': typeof AppPropertiesRoute
   '/app/whatsapp': typeof AppWhatsappRoute
   '/site/$slug': typeof SiteSlugRoute
@@ -125,7 +143,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/app/ai'
+    | '/app/bi'
     | '/app/crm'
+    | '/app/feeds'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -137,7 +157,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/app/ai'
+    | '/app/bi'
     | '/app/crm'
+    | '/app/feeds'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -150,7 +172,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/api/chat'
     | '/app/ai'
+    | '/app/bi'
     | '/app/crm'
+    | '/app/feeds'
     | '/app/properties'
     | '/app/whatsapp'
     | '/site/$slug'
@@ -218,11 +242,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPropertiesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/feeds': {
+      id: '/app/feeds'
+      path: '/feeds'
+      fullPath: '/app/feeds'
+      preLoaderRoute: typeof AppFeedsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/crm': {
       id: '/app/crm'
       path: '/crm'
       fullPath: '/app/crm'
       preLoaderRoute: typeof AppCrmRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/bi': {
+      id: '/app/bi'
+      path: '/bi'
+      fullPath: '/app/bi'
+      preLoaderRoute: typeof AppBiRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/ai': {
@@ -251,7 +289,9 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAiRoute: typeof AppAiRoute
+  AppBiRoute: typeof AppBiRoute
   AppCrmRoute: typeof AppCrmRoute
+  AppFeedsRoute: typeof AppFeedsRoute
   AppPropertiesRoute: typeof AppPropertiesRoute
   AppWhatsappRoute: typeof AppWhatsappRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -259,7 +299,9 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAiRoute: AppAiRoute,
+  AppBiRoute: AppBiRoute,
   AppCrmRoute: AppCrmRoute,
+  AppFeedsRoute: AppFeedsRoute,
   AppPropertiesRoute: AppPropertiesRoute,
   AppWhatsappRoute: AppWhatsappRoute,
   AppIndexRoute: AppIndexRoute,
