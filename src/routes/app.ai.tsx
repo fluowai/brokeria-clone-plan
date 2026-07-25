@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,9 @@ export const Route = createFileRoute("/app/ai")({
   head: () => ({
     meta: [
       { title: "Agentes IA — SquadIA" },
-      { name: "description", content: "Converse com BIA, DONNA e COPY: agentes de IA para vendas, operações e copywriting imobiliário." },
+      { name: "description", content: "Converse com agentes de IA especializados por segmento: urbano, rural, incorporadora e loteadora." },
       { property: "og:title", content: "Agentes IA — SquadIA" },
-      { property: "og:description", content: "Time de agentes IA para o corretor." },
+      { property: "og:description", content: "Time de agentes IA especializados por vertical." },
     ],
   }),
   component: () => (
@@ -27,18 +27,31 @@ export const Route = createFileRoute("/app/ai")({
   ),
 });
 
-const AGENTS = [
+type AgentDef = { id: string; name: string; role: string; accent: string };
+
+const BASE_AGENTS: AgentDef[] = [
   { id: "bia", name: "BIA", role: "Vendas & atendimento", accent: "bg-primary/20 text-primary border-primary/40" },
   { id: "donna", name: "DONNA", role: "Gerente de operações", accent: "bg-violet-500/20 text-violet-300 border-violet-500/40" },
   { id: "copy", name: "COPY", role: "Redator de anúncios", accent: "bg-amber-500/20 text-amber-300 border-amber-500/40" },
-] as const;
+];
 
-type AgentId = (typeof AGENTS)[number]["id"];
+const SPECIALISTS: Record<string, AgentDef> = {
+  rural: { id: "rural", name: "RURAL", role: "Especialista rural (CAR, ITR, crédito)", accent: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" },
+  developer: { id: "incorp", name: "INCORP", role: "Especialista incorporação", accent: "bg-sky-500/20 text-sky-300 border-sky-500/40" },
+  land: { id: "lote", name: "LOTE", role: "Especialista loteamentos", accent: "bg-orange-500/20 text-orange-300 border-orange-500/40" },
+};
 
 function AIChatPage() {
   const { user } = useAuth();
-  const [agent, setAgent] = useState<AgentId>("bia");
-  const storageKey = user ? `squadia.ai.${user.id}.${agent}` : "";
+  const vertical = (user?.tenant?.vertical ?? "urban") as "urban" | "rural" | "developer" | "land";
+
+  const agents = useMemo<AgentDef[]>(() => {
+    const spec = SPECIALISTS[vertical];
+    return spec ? [...BASE_AGENTS, spec] : BASE_AGENTS;
+  }, [vertical]);
+
+  const [agent, setAgent] = useState<string>("bia");
+  const storageKey = user ? `squadia.ai.${user.id}.${vertical}.${agent}` : "";
   const [initialMessages, setInitialMessages] = useState<UIMessage[]>([]);
   const [loaded, setLoaded] = useState(false);
 
@@ -57,13 +70,20 @@ function AIChatPage() {
     return <div className="p-8 text-muted-foreground">Carregando...</div>;
   }
 
+  const verticalLabel =
+    vertical === "rural" ? "Rural" :
+    vertical === "developer" ? "Incorporadora" :
+    vertical === "land" ? "Loteadora" : "Urbana";
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-semibold tracking-tight">Agentes IA</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Seu time de IA sempre pronto. Escolha um agente para conversar.</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Agentes calibrados para o segmento <strong className="text-foreground">{verticalLabel}</strong>.
+      </p>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {AGENTS.map((a) => (
+        {agents.map((a) => (
           <button
             key={a.id}
             onClick={() => setAgent(a.id)}
@@ -77,14 +97,27 @@ function AIChatPage() {
         ))}
       </div>
 
-      <ChatWindow key={agent} agent={agent} storageKey={storageKey} initialMessages={initialMessages} />
+      <ChatWindow
+        key={`${vertical}-${agent}`}
+        agent={agent}
+        vertical={vertical}
+        agents={agents}
+        storageKey={storageKey}
+        initialMessages={initialMessages}
+      />
     </div>
   );
 }
 
 function ChatWindow({
-  agent, storageKey, initialMessages,
-}: { agent: AgentId; storageKey: string; initialMessages: UIMessage[] }) {
+  agent, vertical, agents, storageKey, initialMessages,
+}: {
+  agent: string;
+  vertical: "urban" | "rural" | "developer" | "land";
+  agents: AgentDef[];
+  storageKey: string;
+  initialMessages: UIMessage[];
+}) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -92,7 +125,7 @@ function ChatWindow({
   const { messages, sendMessage, status, setMessages } = useChat({
     id: `${storageKey}`,
     messages: initialMessages,
-    transport: new DefaultChatTransport({ api: "/api/chat", body: { agent } }),
+    transport: new DefaultChatTransport({ api: "/api/chat", body: { agent, vertical } }),
     onError: (e) => toast.error(e.message || "Erro no agente"),
   });
 
@@ -112,6 +145,7 @@ function ChatWindow({
   }, [agent, status]);
 
   const busy = status === "submitted" || status === "streaming";
+  const current = agents.find((a) => a.id === agent) ?? agents[0];
 
   const submit = async () => {
     const t = input.trim();
@@ -128,7 +162,7 @@ function ChatWindow({
   return (
     <Card className="mt-6 p-0 overflow-hidden bg-card/60 border-border/60 flex flex-col h-[calc(100vh-260px)] min-h-[420px]">
       <div className="flex items-center justify-between border-b border-border/60 px-4 py-2 text-xs text-muted-foreground">
-        <span>Conversando com <strong className="text-foreground">{AGENTS.find((a) => a.id === agent)!.name}</strong></span>
+        <span>Conversando com <strong className="text-foreground">{current.name}</strong> — {current.role}</span>
         <button className="hover:text-foreground" onClick={clear} disabled={messages.length === 0}>Limpar conversa</button>
       </div>
 
@@ -173,7 +207,7 @@ function ChatWindow({
               submit();
             }
           }}
-          placeholder={`Mensagem para ${AGENTS.find((a) => a.id === agent)!.name}...`}
+          placeholder={`Mensagem para ${current.name}...`}
           rows={2}
           className="flex-1 resize-none"
           disabled={busy}
